@@ -1,3 +1,16 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; 
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
