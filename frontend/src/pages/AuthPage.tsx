@@ -1,4 +1,5 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 
 type AuthMode = 'login' | 'register';
@@ -6,7 +7,7 @@ type AuthMode = 'login' | 'register';
 interface FormData {
   email: string;
   password: string;
-  username?: string; 
+  username?: string;
 }
 
 interface FormErrors {
@@ -17,6 +18,7 @@ interface FormErrors {
 }
 
 const AuthPage: React.FC = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('login');
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -25,6 +27,10 @@ const AuthPage: React.FC = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  if (localStorage.getItem('auth_token')) {
+    return <Navigate to="/library" replace />; 
+  }
 
   const isValidEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -35,7 +41,7 @@ const AuthPage: React.FC = () => {
   };
 
   const isValidPassword = (password: string): boolean => {
-    return password.length >= 6;
+    return password.length >= 8; 
   };
 
   const validate = (): boolean => {
@@ -50,7 +56,7 @@ const AuthPage: React.FC = () => {
     if (!formData.password) {
       newErrors.password = 'Введите пароль';
     } else if (!isValidPassword(formData.password)) {
-      newErrors.password = 'Пароль должен быть не менее 6 символов';
+      newErrors.password = 'Пароль должен быть не менее 8 символов'; 
     }
 
     if (mode === 'register') {
@@ -65,40 +71,48 @@ const AuthPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     setIsLoading(true);
     setErrors({});
 
     try {
-      //эмулируем запрос
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // фейковый токен
+      // Фейковый токен
       const fakeToken = 'test_token_' + Date.now();
       localStorage.setItem('auth_token', fakeToken);
+
+      const fakeUser = {
+        email: formData.email,
+        name: formData.username || 'Читатель',
+      };
+      localStorage.setItem('user', JSON.stringify(fakeUser));
+
+      navigate('/library'); 
       
-      console.log('Успешный вход/регистрация:', formData);
-      
-      alert('Успешно! Токен сохранён в localStorage');
-    } catch (error) {
-      setErrors({ general: 'Неверный email или пароль' });
+    } catch {
+      setErrors({
+        general:
+          mode === 'login'
+            ? 'Неверный email или пароль'
+            : 'Не удалось создать аккаунт. Попробуйте ещё раз',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  const handleChange =
+    (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    };
 
   const switchMode = (newMode: AuthMode) => {
     setMode(newMode);
@@ -108,20 +122,14 @@ const AuthPage: React.FC = () => {
 
   return (
     <div className="auth-page">
-      <header className="auth-header">
-        <div className="logo">
-          <img src="/assets/book-shelf-fill.svg" alt="Book icon" className="logo-icon" />
-          <span className="logo-text">Book Tracker</span>
-        </div>
-        <a href="/" className="main-link">Главная</a>
-      </header>
-
       <main className="auth-content">
         <div className="background-image">
           <img src="/assets/cat.jpg" alt="Cat with books" />
         </div>
 
-        <div className={`form-card ${mode === 'login' ? 'login-mode' : 'register-mode'}`}>
+        <div
+          className={`form-card ${mode === 'login' ? 'login-mode' : 'register-mode'}`}
+        >
           <span className="star star-top">✦</span>
           <span className="star star-bottom">✦</span>
 
@@ -147,7 +155,6 @@ const AuthPage: React.FC = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
-            {/* Username*/}
             {mode === 'register' && (
               <div className="form-group">
                 <label htmlFor="username">Имя пользователя</label>
@@ -165,7 +172,6 @@ const AuthPage: React.FC = () => {
               </div>
             )}
 
-            {/*Email*/}
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
@@ -181,7 +187,6 @@ const AuthPage: React.FC = () => {
               )}
             </div>
 
-            {/*Password*/}
             <div className="form-group">
               <label htmlFor="password">Пароль</label>
               <input
@@ -202,13 +207,17 @@ const AuthPage: React.FC = () => {
             )}
 
             <button type="submit" className="submit-btn" disabled={isLoading}>
-              {isLoading ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+              {isLoading
+                ? 'Загрузка...'
+                : mode === 'login'
+                  ? 'Войти'
+                  : 'Зарегистрироваться'}
             </button>
 
             {mode === 'login' && (
-              <a href="/forgot-password" className="forgot-link">
+              <Link to="/forgot-password" className="forgot-link">
                 Забыли пароль?
-              </a>
+              </Link>
             )}
             <span className="star-bottom-inline">✦</span>
           </form>

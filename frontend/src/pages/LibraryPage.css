@@ -1,0 +1,224 @@
+.library-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px; 
+  min-height: 100vh;
+}
+
+.library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.library-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.library-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sort-btn,
+.add-book-btn {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-book-btn {
+  background-color: #2d7a6e;
+  color: white;
+  border: none;
+}
+
+.add-book-btn:hover {
+  background-color: #236358;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.view-toggle button {
+  padding: 8px 16px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.view-toggle button.active {
+  background-color: #2d7a6e;
+  color: white;
+}
+
+.status-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #E9F153;
+  padding-bottom: 8px;
+}
+
+.status-tab {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s;
+}
+
+.status-tab.active {
+  background-color: #FFD229;
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+.status-tab:hover:not(.active) {
+  background-color: rgba(255, 210, 41, 0.1);
+}
+
+.year-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.year-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.year-btn.active {
+  background-color: #2d7a6e;
+  color: white;
+  border-color: #2d7a6e;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.books-grid.list {
+  grid-template-columns: 1fr;
+}
+
+.book-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.book-cover {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.book-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.book-author {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.book-rating {
+  color: #FFD229;
+  font-size: 16px;
+  margin: 4px 0;
+}
+
+.book-date {
+  font-size: 13px;
+  color: #999;
+  margin: 4px 0;
+}
+
+.book-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.edit-btn,
+.more-btn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #2d7a6e;
+  border-radius: 6px;
+  background: white;
+  color: #2d7a6e;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  background-color: #2d7a6e;
+  color: white;
+}
+
+.more-btn {
+  flex: 0 0 auto;
+  width: 40px;
+}
+
+.book-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  height: 20px;
+  line-height: 20px;
+}

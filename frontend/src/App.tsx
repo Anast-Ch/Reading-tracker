@@ -1,10 +1,26 @@
-import AuthPage from './components/AuthPage/AuthPage'; 
-import './App.css'; 
+import { Route, Routes } from "react-router-dom";
+import Header from "./components/Header";
+import RequireAuth from "./components/RequireAuth";
+import HomePage from "./pages/HomePage";
+import AuthPage from "./pages/AuthPage";
+import LibraryPage from "./pages/LibraryPage";
 
-function App() {
+export default function App() {
   return (
-    <AuthPage />
+    <>
+      <Header />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/library"
+          element={
+            <RequireAuth>
+              <LibraryPage />
+            </RequireAuth>
+          }
+        />
+      </Routes>
+    </>
   );
 }
-
-export default App;

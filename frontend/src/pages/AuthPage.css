@@ -1,62 +1,9 @@
-@font-face {
-  font-family: 'Logotext'; 
-  src: url('/public/fonts/Inspiration-Regular.ttf') format('truetype'); 
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'MainFont'; 
-  src: url('/fonts/DidactGothic-Regular.ttf') format('truetype'); 
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap; 
-}
-
 .auth-page {
   min-height: 100vh;
   background-color: #f5d547; 
   font-family: 'MainFont', sans-serif;
   position: relative;
   overflow: hidden;
-}
-
-.auth-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 48px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-}
-
-.logo-text {
-  font-family: 'Logotext', cursive;
-  font-size: 48px;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-
-.main-link {
-  font-size: 25px;
-  font-weight: 600;
-  color: #8b1a1a;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.main-link:hover {
-  opacity: 0.7;
 }
 
 .auth-content {
@@ -265,14 +212,6 @@
 }
 
 @media (max-width: 768px) {
-  .auth-header {
-    padding: 16px 24px;
-  }
-
-  .logo-text {
-    font-size: 32px;
-  }
-
   .auth-content {
     flex-direction: column;
     padding: 20px;
