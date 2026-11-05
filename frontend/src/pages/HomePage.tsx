@@ -89,7 +89,7 @@ export default function HomePage() {
       <footer className="footer" id="contacts">
         <div className="container footer__inner">
           <div>
-            <b>Читалка</b>
+            <b></b>
             <p className="mut">Учебный проект. Автор: [ИМЯ АВТОРА]</p>
           </div>
           <div>

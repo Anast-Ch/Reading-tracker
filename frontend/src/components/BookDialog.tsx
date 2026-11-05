@@ -134,6 +134,17 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
         <h2 id="dialog-title">{book ? "Редактировать книгу" : "Новая книга"}</h2>
 
         <label className="field">
+          Список
+          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="field">
           Название
           <input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
           {errors.title && <span className="field__error">{errors.title}</span>}
@@ -155,17 +166,6 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
           Количество страниц (необязательно)
           <input inputMode="numeric" value={pages} onChange={(e) => setPages(e.target.value)} />
           {errors.pages && <span className="field__error">{errors.pages}</span>}
-        </label>
-
-        <label className="field">
-          Список
-          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
         </label>
 
         {status !== "want_to_read" && (

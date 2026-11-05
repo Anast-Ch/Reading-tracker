@@ -1,0 +1,49 @@
+.book-card { position: relative; }
+
+.card-menu { position: absolute; top: 22px; right: 22px; }
+
+.card-menu__btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.card-menu__btn:hover { background: var(--yellow); }
+
+.card-menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  width: max-content;
+  min-width: 230px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(22, 22, 22, 0.18);
+}
+
+.card-menu__item {
+  min-height: 44px;
+  padding: 0 14px;
+  text-align: left;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--ink);
+  font: 500 15px Inter, 'MainFont', sans-serif;
+  cursor: pointer;
+}
+.card-menu__item:hover,
+.card-menu__item:focus-visible { background: var(--cream); }
+.card-menu__item--danger { color: #b3261e; }
+
+.card-menu__sep { height: 2px; margin: 4px 8px; background: rgba(22, 22, 22, 0.15); }
