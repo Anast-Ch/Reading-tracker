@@ -1,40 +1,50 @@
-# Схема базы данных 
+# Схема базы данных
 
-## Таблица users
+СУБД: PostgreSQL 16 (запускается через `docker compose`).
+Таблицы создаются автоматически при старте сервера.
 
-| Поле | Тип | Ограничения | Описание |
-|---|---|---|---|
-| id | INTEGER | PK, AUTOINCREMENT | |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | логин пользователя |
-| name | VARCHAR(100) | NULLABLE | отображаемое имя; `NULL` при регистрации, задаётся через `PATCH /users/me` |
-| password_hash | VARCHAR(255) | NOT NULL | хэш пароля (bcrypt/argon2) |
-| created_at | DATETIME | NOT NULL, DEFAULT now() | |
+## users
 
-## Таблица user_books
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | integer, PK | |
+| email | varchar(255), unique, not null | |
+| password_hash | varchar(255), not null | bcrypt-хэш |
+| name | varchar(150), null | задаётся в профиле |
+| created_at | timestamptz, not null | по умолчанию текущее время |
 
-Личная запись о книге в дневнике чтения конкретного пользователя.
-Общего каталога книг нет, каждая запись принадлежит только одному пользователю.
+## user_books
 
-| Поле | Тип | Ограничения | Описание |
-|---|---|---|---|
-| id | INTEGER | PK, AUTOINCREMENT | |
-| user_id | INTEGER | FK → users.id, NOT NULL, ON DELETE CASCADE | владелец записи |
-| title | VARCHAR(500) | NOT NULL | название книги |
-| author | VARCHAR(300) | NOT NULL | автор книги |
-| publish_year | INTEGER | NULLABLE | год издания книги; `CHECK (publish_year > 0)` |
-| status | VARCHAR(20) | NOT NULL, CHECK IN ('want_to_read','reading','read') | статус в дневнике |
-| start_date | DATE | NULLABLE | дата начала чтения |
-| finish_date | DATE | NULLABLE | дата завершения чтения |
-| rating | INTEGER | NULLABLE, CHECK (1 <= rating <= 5) | только для status = 'read' |
-| pages_count | INTEGER | NULLABLE, CHECK (pages_count > 0) | опционально, для статистики |
-| cover_path | VARCHAR(500) | NULLABLE | путь к загруженному файлу обложки |
-| created_at | DATETIME | NOT NULL, DEFAULT now() | |
-| updated_at | DATETIME | NOT NULL, DEFAULT now(), ON UPDATE now() | |
+Одна запись — одно прочтение книги пользователем. Отдельной таблицы
+`books` нет: книги не используются совместно между пользователями.
 
-## Бизнес-правила (валидация на уровне приложения)
-- `rating` разрешён только если `status = 'read'`. При другом статусе — должен быть NULL.
-- `finish_date` не может быть раньше `start_date`.
-- Если `status = 'read'` — `finish_date` обязателен.
-- Если `status = 'want_to_read'` — `start_date` и `finish_date` должны быть NULL.
-- `cover_path` не задаётся напрямую пользователем в теле запроса — заполняется сервером автоматически после загрузки файла через отдельный endpoint.
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | integer, PK | |
+| user_id | integer, FK → users.id, ON DELETE CASCADE, not null, индекс | |
+| title | varchar(500), not null | |
+| author | varchar(300), not null | |
+| publish_year | integer, null | год издания |
+| status | varchar(20), not null | `want_to_read`, `reading`, `read` |
+| start_date | date, null | |
+| finish_date | date, null | |
+| rating | integer, null | 1–5 |
+| pages_count | integer, null | |
+| cover_path | varchar(500), null | путь к файлу обложки, например `/static/covers/<uuid>.jpg` |
+| created_at | timestamptz, not null | |
+| updated_at | timestamptz, not null | обновляется при изменении записи |
 
+### Ограничения в БД (CHECK)
+
+- `status IN ('want_to_read', 'reading', 'read')`
+- `rating IS NULL OR rating BETWEEN 1 AND 5`
+- `pages_count IS NULL OR pages_count > 0`
+- `publish_year IS NULL OR publish_year > 0`
+
+Правила, зависящие от статуса и дат (оценка и дата завершения только у
+«Прочитано», даты не в будущем, завершение не раньше начала), проверяются
+на уровне сервиса — см. `API.md`.
+
+## Удаление данных
+
+При удалении пользователя все его записи в `user_books` удаляются каскадом.
