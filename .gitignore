@@ -16,3 +16,8 @@ build/
 .vscode/
 .idea/
 .DS_Store
+
+project_code.txt
+
+# загруженные обложки
+backend/static/covers/
