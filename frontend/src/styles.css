@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'MyFont'; 
+  src: url('/fonts/DidactGothic-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; 
+}
+
 :root {
   --cream: #fff5ce;
   --yellow: #ffd229;
@@ -8,20 +16,21 @@
   --muted: #55524a;
   --radius: 28px;
   --line: 2px solid var(--ink);
+  --white: #fff;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: 'MyFont', sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
   background: var(--cream);
 }
 
-h1, h2, h3 { font-family: "Roboto Slab", Georgia, serif; margin: 0; line-height: 1.15; }
+h1, h2, h3 { font-family: "MyFont", serif; margin: 0; line-height: 1.15; }
 h1 { font-size: clamp(36px, 5vw, 60px); }
 h2 { font-size: 34px; }
 h3 { font-size: 20px; }
@@ -37,7 +46,7 @@ a { color: inherit; }
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 22px;
   border: var(--line); border-radius: 999px;
-  font: 600 15px Inter, sans-serif; color: var(--ink);
+  font: 600 15px MyFont, sans-serif; color: var(--ink);
   text-decoration: none; cursor: pointer; background: #fff;
 }
 .btn:hover { transform: translateY(-1px); }
@@ -70,7 +79,7 @@ a { color: inherit; }
 .page { padding-top: 40px; padding-bottom: 72px; display: flex; flex-direction: column; gap: 24px; }
 .page__head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .search-panel { background: var(--pink); border: var(--line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.search-input { height: 56px; border: var(--line); border-radius: 999px; padding: 0 24px; font: 500 17px Inter, sans-serif; background: #fff; }
+.search-input { height: 56px; border: var(--line); border-radius: 999px; padding: 0 24px; font: 500 17px MyFont, sans-serif; background: #fff; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip { min-height: 40px; padding: 0 18px; border: var(--line); border-radius: 999px; background: #fff; font: 500 15px Inter, sans-serif; cursor: pointer; }
 .chip--on { background: var(--ink); color: #fff; }
@@ -78,8 +87,8 @@ a { color: inherit; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; }
 .book-card { background: #fff; border: var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .book-card__body { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.book-card__title { font-size: 18px; }
-.book-card__author { color: var(--muted); font-size: 14px; }
+.book-card__title { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin: 0; }
+.book-card__author { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin: 0; }
 .badge { align-self: flex-start; padding: 2px 12px; border: var(--line); border-radius: 999px; font-size: 13px; font-weight: 600; }
 .badge--want { background: var(--cream); }
 .badge--reading { background: var(--yellow); }
@@ -109,3 +118,32 @@ a { color: inherit; }
   .features { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+
+/* Контейнер для двух иконок в ряд */
+.book-card__icon-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Маленькая квадратная кнопка-иконка */
+.btn--icon {
+  min-height: 38px;
+  width: 90px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 12px; /* чуть менее круглая, чем pill */
+}
+
+/* Кнопка удаления — с красным оттенком при наведении */
+.btn--icon-danger:hover {
+  background: #ffe0e0;
+  border-color: #d32f2f;
+}
+
+.btn--icon:hover {
+  background: #f0f0f0;
+}

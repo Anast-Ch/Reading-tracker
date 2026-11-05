@@ -1,125 +1,197 @@
-import React, { useState } from 'react';
-import './LibraryPage.css';
+import { useState } from "react";
+import { isDemo, messageOf } from "../api/client";
+import BookCard from "../components/BookCard";
+import BookDialog from "../components/BookDialog";
+import { useBooks } from "../hooks/useBooks";
+import type { CoverChange } from "../hooks/useBooks";
+import { todayStr } from "../lib/date";
+import type { Book, BookInput, SortBy, Status } from "../types";
+import { STATUSES, STATUS_LABELS } from "../types";
+import "./LibraryPage.css";
 
-type BookStatus = 'want_to_read' | 'reading' | 'read';
+type SortKey = "new" | "start" | "finish" | "title" | "author";
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  status: BookStatus;
-  rating?: number;
-  coverColor?: string;
-  finishedDate?: string;
-}
+const SORTS: Record<SortKey, { label: string; sort_by: SortBy; order: "asc" | "desc" }> = {
+  new: { label: "Сначала новые", sort_by: "created_at", order: "desc" },
+  start: { label: "По дате начала", sort_by: "start_date", order: "desc" },
+  finish: { label: "По дате окончания", sort_by: "finish_date", order: "desc" },
+  title: { label: "По названию", sort_by: "title", order: "asc" },
+  author: { label: "По автору", sort_by: "author", order: "asc" },
+};
 
-// Временные моковые данные 
-const mockBooks: Book[] = [
-  { id: 1, title: 'Мастер и Маргаритаdfgfdfghdfghddfgfdgdfgfdgfdgfdgfdgfdgfdgfdgfdgfdg', author: 'М. Булгаков', status: 'read', rating: 5, finishedDate: '12 окт 2026' },
-  { id: 2, title: '1984', author: 'Дж. Оруэлл', status: 'read', rating: 4, finishedDate: '3 окт 2026' },
-  { id: 3, title: 'Сто лет одиночества', author: 'Г. Гарсиа Маркес', status: 'read', rating: 5, finishedDate: '21 сен 2026' },
-  { id: 4, title: 'Преступление и наказание', author: 'Ф. Достоевский', status: 'read', rating: 4, finishedDate: '30 авг 2026' },
-  { id: 5, title: 'Дюна', author: 'Ф. Герберт', status: 'read', rating: 3, finishedDate: '14 авг 2026' },
-  { id: 6, title: 'Маленький принц', author: 'А. де Сент-Экзюпери', status: 'reading', rating: 0 },
-  { id: 7, title: 'Над пропастью во ржи', author: 'Дж. Сэлинджер', status: 'want_to_read' },
-  { id: 8, title: 'Одиссея', author: 'Гомер', status: 'want_to_read' },
-];
+const SORTS_FOR_TAB: Record<Status, SortKey[]> = {
+  want_to_read: ["new", "title", "author"],
+  reading: ["new", "start", "title", "author"],
+  read: ["new", "finish", "start", "title", "author"],
+};
 
-const LibraryPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<BookStatus>('read');
-  const [selectedYear, setSelectedYear] = useState<string>('2026');
+const EMPTY_TEXT: Record<Status, string> = {
+  want_to_read: "Здесь будут книги, которые вы планируете прочитать.",
+  reading: "Сейчас вы ничего не читаете. Начните с книги из списка «Хочу прочитать».",
+  read: "Пока нет прочитанных книг.",
+};
 
-  // Фильтрация книг по статусу
-  const filteredBooks = mockBooks.filter(book => book.status === activeTab);
+export default function LibraryPage() {
+  const [tab, setTab] = useState<Status>("reading");
+  const [sort, setSort] = useState<SortKey>("new");
+  const [year, setYear] = useState<number | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Book | null>(null);
+  const [notice, setNotice] = useState("");
 
-  // Подсчет книг для табов
-  const booksCount = {
-    want_to_read: mockBooks.filter(b => b.status === 'want_to_read').length,
-    reading: mockBooks.filter(b => b.status === 'reading').length,
-    read: mockBooks.filter(b => b.status === 'read').length,
-  };
+  const sortKey = SORTS_FOR_TAB[tab].includes(sort) ? sort : "new";
+  const { sort_by, order } = SORTS[sortKey];
+
+  const activeYear = tab === "read" ? year : null;
+
+  const { books, counts, years, loading, error, create, update, remove } = useBooks({
+    status: tab,
+    year: activeYear ?? undefined,
+    sort_by,
+    order,
+  });
+
+  const shownYear = activeYear !== null && years.includes(activeYear) ? activeYear : null;
+
+  async function handleSave(data: BookInput, cover: CoverChange) {
+    const warning = editing ? await update(editing.id, data, cover) : await create(data, cover);
+    setNotice(warning ?? "");
+    setTab(data.status); 
+  }
+
+  async function handleAdvance(book: Book) {
+    const today = todayStr();
+    try {
+      if (book.status === "want_to_read") {
+        await update(book.id, { status: "reading", start_date: today });
+        setTab("reading");
+      } else if (book.status === "reading") {
+        await update(book.id, { status: "read", finish_date: today });
+        setTab("read");
+      }
+      setNotice("");
+    } catch (e) {
+      setNotice(messageOf(e));
+    }
+  }
+
+  async function handleDelete(book: Book) {
+    if (!window.confirm(`Удалить «${book.title}» из библиотеки?`)) return;
+    try {
+      await remove(book.id);
+      setNotice("");
+    } catch (e) {
+      setNotice(messageOf(e));
+    }
+  }
+
+  const message = notice || error;
 
   return (
-    <div className="library-page">
-      <div className="library-header">
+    <main className="container page">
+      <div className="page__head">
         <h1>Моя библиотека</h1>
-        
-        <div className="library-controls">
-          <button className="sort-btn">По дате окончания</button>
-          <button className="add-book-btn">+ Добавить книгу</button>
-        </div>
-      </div>
-
-      <div className="status-tabs">
-        <button 
-          className={`status-tab ${activeTab === 'want_to_read' ? 'active' : ''}`}
-          onClick={() => setActiveTab('want_to_read')}
-        >
-          Хочу прочитать ({booksCount.want_to_read})
-        </button>
-        <button 
-          className={`status-tab ${activeTab === 'reading' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reading')}
-        >
-          Читаю ({booksCount.reading})
-        </button>
-        <button 
-          className={`status-tab ${activeTab === 'read' ? 'active' : ''}`}
-          onClick={() => setActiveTab('read')}
-        >
-          Прочитано ({booksCount.read})
+        <button type="button" className="btn btn--yellow" onClick={() => setCreating(true)}>
+          + Добавить книгу
         </button>
       </div>
 
-      {/* Фильтр по годам */}
-      {activeTab === 'read' && (
-        <div className="year-filters">
-          {['2026', '2025', '2024', 'Все годы'].map(year => (
+      {isDemo() && (
+        <p className="mut">Демо-режим: данные хранятся только в этом браузере и не связаны с сервером.</p>
+      )}
+
+      {message && (
+        <p className="lib-error" role="alert">
+          {message}
+        </p>
+      )}
+
+      <div className="lib-toolbar">
+        <div className="lib-tabs" role="tablist" aria-label="Списки книг">
+          {STATUSES.map((s) => (
             <button
-              key={year}
-              className={`year-btn ${selectedYear === year ? 'active' : ''}`}
-              onClick={() => setSelectedYear(year)}
+              key={s}
+              id={`tab-${s}`}
+              type="button"
+              role="tab"
+              aria-selected={tab === s}
+              aria-controls="lib-panel"
+              className="lib-tab"
+              onClick={() => setTab(s)}
             >
-              {year}
+              {STATUS_LABELS[s]}
+              <span className="lib-tab__count">{counts[s]}</span>
+            </button>
+          ))}
+        </div>
+
+        <label className="lib-sort">
+          Сортировка
+          <select value={sortKey} onChange={(e) => setSort(e.target.value as SortKey)}>
+            {SORTS_FOR_TAB[tab].map((k) => (
+              <option key={k} value={k}>
+                {SORTS[k].label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {tab === "read" && years.length > 0 && (
+        <div className="chips" role="group" aria-label="Фильтр по году окончания">
+          <button
+            type="button"
+            className={`chip${shownYear === null ? " chip--on" : ""}`}
+            aria-pressed={shownYear === null}
+            onClick={() => setYear(null)}
+          >
+            Все годы
+          </button>
+          {years.map((y) => (
+            <button
+              key={y}
+              type="button"
+              className={`chip${shownYear === y ? " chip--on" : ""}`}
+              aria-pressed={shownYear === y}
+              onClick={() => setYear(y)}
+            >
+              {y}
             </button>
           ))}
         </div>
       )}
 
-      <div className='books-grid'>
-        {filteredBooks.map(book => (
-          <div key={book.id} className="book-card">
-            <div className="book-cover" style={{ backgroundColor: getCoverColor(book.id) }}>
-            </div>
-            <div className="book-info">
-              <h3 className="book-title">{book.title}</h3>
-              <p className="book-author">{book.author}</p>
-              {book.rating && (
-                <div className="book-rating">
-                  {'★'.repeat(book.rating)}
-                  {'☆'.repeat(5 - book.rating)}
-                </div>
-              )}
-              {book.finishedDate && (
-                <span className="book-date">{book.finishedDate}</span>
-              )}
-              <div className="book-actions">
-                <button className="edit-btn">Изменить</button>
-                <button className="more-btn">⋯</button>
-              </div>
-            </div>
+      <div id="lib-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
+        {loading ? (
+          <p className="mut">Загрузка...</p>
+        ) : books.length === 0 ? (
+          <div className="empty">
+            <h2>{STATUS_LABELS[tab]}: пусто</h2>
+            <p>{EMPTY_TEXT[tab]}</p>
+            <button type="button" className="btn btn--yellow" onClick={() => setCreating(true)}>
+              Добавить книгу
+            </button>
           </div>
-        ))}
+        ) : (
+          <div className="grid">
+            {books.map((b) => (
+              <BookCard key={b.id} book={b} onEdit={setEditing} onDelete={handleDelete} onAdvance={handleAdvance} />
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+
+      {(creating || editing) && (
+        <BookDialog
+          book={editing ?? undefined}
+          defaultStatus={tab}
+          onSave={handleSave}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+        />
+      )}
+    </main>
   );
-};
-
-// функция для цветов обложек
-const getCoverColor = (id: number): string => {
-  const colors = ['#CAEDB8', '#56694F', '#963F2E', '#FC8A2D', '#3D1534', '#9E9820', '#F0C283', '#5D6973', '#CF6E6C', '#DCA7A1',
-    '#F39BB3', '#A7F3F3', '#8AA68F', '#D4D973', '#BF9177', '#B26565',];
-  return colors[id % colors.length];
-};
-
-export default LibraryPage;
+}

@@ -1,45 +1,97 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Book } from "../types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createBook,
+  deleteBook,
+  deleteCover,
+  getBooks,
+  getCounts,
+  getYears,
+  updateBook,
+  uploadCover,
+} from "../api/booksApi";
+import type { BookQuery } from "../api/booksApi";
+import { messageOf } from "../api/client";
+import type { Book, BookInput, Counts } from "../types";
 
-const KEY = "reading-tracker:books";
+export interface CoverChange {
+  file?: File; 
+  remove?: boolean; 
+}
 
-function load(): Book[] {
+const EMPTY_COUNTS: Counts = { want_to_read: 0, reading: 0, read: 0 };
+
+async function applyCover(id: number, cover?: CoverChange): Promise<string | null> {
   try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Book[]) : [];
-  } catch {
-    return [];
+    if (cover?.file) await uploadCover(id, cover.file);
+    else if (cover?.remove) await deleteCover(id);
+    return null;
+  } catch (e) {
+    return `Книга сохранена, но с обложкой возникла проблема: ${messageOf(e)}`;
   }
 }
 
-/**
- * Временное хранилище книг в браузере.
- * Когда появится бэкенд, замените тело add/remove на запросы к API,
- * а интерфейс хука (books, add, remove) оставьте прежним.
- */
-export function useBooks() {
-  const [books, setBooks] = useState<Book[]>(load);
+export function useBooks(query: BookQuery) {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [counts, setCounts] = useState<Counts>(EMPTY_COUNTS);
+  const [years, setYears] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const lastRequest = useRef(0);
+
+  const { status, year, sort_by, order } = query;
+
+  const reload = useCallback(async () => {
+    const id = ++lastRequest.current; 
+    try {
+      const [b, c, y] = await Promise.all([
+        getBooks({ status, year, sort_by, order }),
+        getCounts(),
+        getYears(),
+      ]);
+      if (id !== lastRequest.current) return;
+      setBooks(b);
+      setCounts(c);
+      setYears(y);
+      setError("");
+    } catch (e) {
+      if (id === lastRequest.current) setError(messageOf(e));
+    } finally {
+      if (id === lastRequest.current) setLoading(false);
+    }
+  }, [status, year, sort_by, order]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(books));
-    } catch {
-      console.warn("Не удалось сохранить книги: хранилище переполнено");
-    }
-  }, [books]);
+    setLoading(true);
+    reload();
+  }, [reload]);
 
-  const add = useCallback((data: Omit<Book, "id" | "addedAt">) => {
-    const book: Book = {
-      ...data,
-      id: crypto.randomUUID(),
-      addedAt: new Date().toISOString(),
-    };
-    setBooks((prev) => [book, ...prev]);
-  }, []);
+  const create = useCallback(
+    async (input: BookInput, cover?: CoverChange) => {
+      const book = await createBook(input);
+      const warning = await applyCover(book.id, cover);
+      await reload();
+      return warning;
+    },
+    [reload]
+  );
 
-  const remove = useCallback((id: string) => {
-    setBooks((prev) => prev.filter((b) => b.id !== id));
-  }, []);
+  const update = useCallback(
+    async (id: number, patch: Partial<BookInput>, cover?: CoverChange) => {
+      await updateBook(id, patch);
+      const warning = await applyCover(id, cover);
+      await reload();
+      return warning;
+    },
+    [reload]
+  );
 
-  return { books, add, remove };
+  const remove = useCallback(
+    async (id: number) => {
+      await deleteBook(id);
+      await reload();
+    },
+    [reload]
+  );
+
+  return { books, counts, years, loading, error, create, update, remove };
 }

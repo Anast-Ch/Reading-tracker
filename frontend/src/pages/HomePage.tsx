@@ -34,7 +34,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="mosaic" aria-hidden="true">
-          <div className="mosaic__tile" style={{ background: "var(--cream)", gridColumn: "span 2" }}>Хочу прочитать</div>
+          <div className="mosaic__tile" style={{ background: "var(--white)", gridColumn: "span 2" }}>Хочу прочитать</div>
           <div className="mosaic__tile" style={{ background: "var(--yellow)", gridColumn: "span 3" }}>Читаю сейчас</div>
           <div className="mosaic__tile" style={{ background: "var(--pink)", gridColumn: "span 3" }}>Прочитано</div>
           <div className="mosaic__tile" style={{ background: "var(--blue)", gridColumn: "span 2" }}>Оценки</div>

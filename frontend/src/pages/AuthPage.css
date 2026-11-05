@@ -78,7 +78,7 @@
 }
 
 .star-top {
-  top: 10px;
+  top: 1px;
 }
 
 .tabs {
@@ -166,9 +166,10 @@
 .general-error {
   font-size: 17px;
   color: #e74c3c;
+  font-weight: 600;
   text-align: center;
   padding: 8px;
-  background: rgba(231, 76, 60, 0.1);
+  background: rgba(225, 209, 206, 0.681);
   border-radius: 6px;
 }
 

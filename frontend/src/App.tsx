@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import RequireAuth from "./components/RequireAuth";
 import HomePage from "./pages/HomePage";
@@ -20,6 +20,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
