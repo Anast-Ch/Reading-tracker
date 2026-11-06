@@ -18,8 +18,9 @@ interface FormErrors {
   general?: string;
 }
 
-const PASSWORD_MIN = 8;
-const PASSWORD_MAX = 72;
+// Требования бэкенда к паролю (app/schemas/user.py)
+const PASSWORD_MIN = 8; // символов
+const PASSWORD_MAX_BYTES = 72; // байт в UTF-8: латиница 1 байт на символ, кириллица 2
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const AuthPage = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Уже вошёл? Страница входа не нужна, отправляем в библиотеку.
   if (localStorage.getItem(TOKEN_KEY)) {
     return <Navigate to="/library" replace />;
   }
@@ -47,9 +49,11 @@ const AuthPage = () => {
       newErrors.password = 'Введите пароль';
     } else if (
       mode === 'register' &&
-      (formData.password.length < PASSWORD_MIN || formData.password.length > PASSWORD_MAX)
+      (formData.password.length < PASSWORD_MIN ||
+        new TextEncoder().encode(formData.password).length > PASSWORD_MAX_BYTES)
     ) {
-      newErrors.password = `Пароль должен быть от ${PASSWORD_MIN} до ${PASSWORD_MAX} символов`;
+      // Длину проверяем только при регистрации: при входе её проверит сам бэкенд
+      newErrors.password = `Пароль: от ${PASSWORD_MIN} символов, не более ${PASSWORD_MAX_BYTES} байт (кириллица занимает 2 байта на символ)`;
     }
 
     setErrors(newErrors);
@@ -66,7 +70,7 @@ const AuthPage = () => {
     const email = formData.email.trim();
     try {
       if (mode === 'register') {
-        await register(email, formData.password); 
+        await register(email, formData.password); // токена не даёт
       }
       const token = await login(email, formData.password);
       localStorage.setItem(TOKEN_KEY, token);
@@ -93,6 +97,7 @@ const AuthPage = () => {
 
   return (
     <div className="auth-page">
+      {/* Шапка общая: она подключена в App.tsx */}
       <main className="auth-content">
         <div className="background-image">
           <img src="/assets/cat.jpg" alt="Cat with books" />
@@ -154,6 +159,7 @@ const AuthPage = () => {
               {isLoading ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
             </button>
 
+            {/* ДЕМО-ВХОД: работает без сервера. Удалить вместе с booksMock.ts, когда он станет не нужен. */}
             <button
               type="button"
               className="forgot-link"

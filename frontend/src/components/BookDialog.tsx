@@ -9,8 +9,10 @@ import { validateCover } from "../lib/image";
 import StarRating from "./StarRating";
 
 interface Props {
+  /** Если передана, окно работает как «Редактировать», иначе как «Новая книга» */
   book?: Book;
   defaultStatus: Status;
+  /** Должна бросить ошибку, если сервер отклонил данные: текст покажем в окне */
   onSave: (data: BookInput, cover: CoverChange) => Promise<void>;
   onClose: () => void;
 }
@@ -42,6 +44,7 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
   const fileRef = useRef<HTMLInputElement>(null);
   const blobUrl = useRef<string | null>(null);
 
+  // Освобождаем память от временной ссылки на выбранный файл
   useEffect(() => () => {
     if (blobUrl.current) URL.revokeObjectURL(blobUrl.current);
   }, []);
@@ -78,8 +81,12 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
     const e: Record<string, string> = {};
     if (!title.trim()) e.title = "Введите название";
     if (!author.trim()) e.author = "Введите автора";
-    if (publishYear.trim() && !isPositiveInt(publishYear.trim())) e.publishYear = "Введите год числом";
-    if (pages.trim() && !isPositiveInt(pages.trim())) e.pages = "Введите число больше нуля";
+    if (publishYear.trim() && !(isPositiveInt(publishYear.trim()) && Number(publishYear) <= 9999)) {
+      e.publishYear = "Год издания: число от 1 до 9999";
+    }
+    if (pages.trim() && !(isPositiveInt(pages.trim()) && Number(pages) <= 100000)) {
+      e.pages = "Количество страниц: число от 1 до 100000";
+    }
     if (status !== "want_to_read" && startDate && startDate > today) {
       e.startDate = "Дата начала не может быть в будущем";
     }
@@ -98,6 +105,7 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
     setServerError("");
     if (Object.keys(found).length > 0) return;
 
+    // Правила бэкенда: у «Хочу» дат нет, у «Читаю» нет даты окончания, оценка только у «Прочитано»
     const data: BookInput = {
       title: title.trim(),
       author: author.trim(),
@@ -134,25 +142,14 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
         <h2 id="dialog-title">{book ? "Редактировать книгу" : "Новая книга"}</h2>
 
         <label className="field">
-          Список
-          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="field">
           Название
-          <input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+          <input value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} autoFocus />
           {errors.title && <span className="field__error">{errors.title}</span>}
         </label>
 
         <label className="field">
           Автор
-          <input value={author} onChange={(e) => setAuthor(e.target.value)} />
+          <input value={author} maxLength={300} onChange={(e) => setAuthor(e.target.value)} />
           {errors.author && <span className="field__error">{errors.author}</span>}
         </label>
 
@@ -166,6 +163,17 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
           Количество страниц (необязательно)
           <input inputMode="numeric" value={pages} onChange={(e) => setPages(e.target.value)} />
           {errors.pages && <span className="field__error">{errors.pages}</span>}
+        </label>
+
+        <label className="field">
+          Список
+          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
         </label>
 
         {status !== "want_to_read" && (

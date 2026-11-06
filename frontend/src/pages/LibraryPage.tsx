@@ -25,10 +25,8 @@ export default function LibraryPage() {
   const activeYear = tab === "read" ? year : null;
 
   const { books, counts, years, loading, error, create, update, remove } = useBooks({
-    status: tab,
-    year: activeYear ?? undefined,
-    sort_by: "created_at",
-    order: "desc",
+      status: tab,
+      year: activeYear ?? undefined,
   });
 
   const shownYear = activeYear !== null && years.includes(activeYear) ? activeYear : null;

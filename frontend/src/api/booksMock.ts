@@ -1,4 +1,9 @@
-// ДЕМО-РЕЖИМ для проверки, книги сохраняются в localStorage
+/**
+ * ДЕМО-РЕЖИМ: имитация бэкенда книг в браузере (localStorage).
+ * Работает, когда пользователь вошёл кнопкой «Демо-вход».
+ * Повторяет правила настоящего API (см. API.md), чтобы можно было проверить
+ * весь интерфейс без запущенного сервера.
+ */
 import { ApiError } from "./client";
 import type { BookQuery } from "./booksApi";
 import type { Book, BookInput, Counts } from "../types";
@@ -6,16 +11,16 @@ import type { Book, BookInput, Counts } from "../types";
 const KEY = "reading-tracker:demo-books";
 
 const SEED: Book[] = [
-  { id: 1, title: "Война и мир", author: "Лев Толстой", publish_year: 1869, status: "reading", start_date: "2026-10-01", finish_date: null, rating: null, pages_count: 1300, cover_path: null, created_at: "2026-10-01T12:00:00" },
-  { id: 2, title: "Мастер и Маргарита", author: "Михаил Булгаков", publish_year: 1967, status: "read", start_date: "2026-08-20", finish_date: "2026-09-12", rating: 5, pages_count: 480, cover_path: null, created_at: "2026-08-20T10:00:00" },
-  { id: 3, title: "1984", author: "Джордж Оруэлл", publish_year: 1949, status: "read", start_date: "2025-11-02", finish_date: "2025-11-20", rating: 4, pages_count: 320, cover_path: null, created_at: "2025-11-02T09:00:00" },
-  { id: 4, title: "Дюна", author: "Фрэнк Герберт", publish_year: 1965, status: "want_to_read", start_date: null, finish_date: null, rating: null, pages_count: null, cover_path: null, created_at: "2026-10-15T18:00:00" },
+  { id: 1, title: "Война и мир", author: "Лев Толстой", publish_year: 1869, status: "reading", start_date: "2026-10-01", finish_date: null, rating: null, pages_count: 1300, cover_path: null, created_at: "2026-10-01T12:00:00Z", updated_at: "2026-10-01T12:00:00Z" },
+  { id: 2, title: "Мастер и Маргарита", author: "Михаил Булгаков", publish_year: 1967, status: "read", start_date: "2026-08-20", finish_date: "2026-09-12", rating: 5, pages_count: 480, cover_path: null, created_at: "2026-08-20T10:00:00Z", updated_at: "2026-08-20T10:00:00Z" },
+  { id: 3, title: "1984", author: "Джордж Оруэлл", publish_year: 1949, status: "read", start_date: "2025-11-02", finish_date: "2025-11-20", rating: 4, pages_count: 320, cover_path: null, created_at: "2025-11-02T09:00:00Z", updated_at: "2025-11-02T09:00:00Z" },
+  { id: 4, title: "Дюна", author: "Фрэнк Герберт", publish_year: 1965, status: "want_to_read", start_date: null, finish_date: null, rating: null, pages_count: null, cover_path: null, created_at: "2026-10-15T18:00:00Z", updated_at: "2026-10-15T18:00:00Z" },
 ];
 
 function read(): Book[] {
   const raw = localStorage.getItem(KEY);
   if (raw === null) {
-    write(SEED); 
+    write(SEED); // первый запуск: несколько примеров, чтобы было что смотреть
     return [...SEED];
   }
   try {
@@ -33,6 +38,7 @@ function write(books: Book[]) {
   }
 }
 
+/** Те же бизнес-правила, что описаны в DB_SCHEMA.md */
 function check(b: Book) {
   if (!b.title.trim() || !b.author.trim()) throw new ApiError(400, "Название и автор обязательны");
   if (b.status !== "read" && b.rating !== null) throw new ApiError(400, "Оценка возможна только для прочитанных книг");
@@ -45,15 +51,6 @@ function check(b: Book) {
   }
 }
 
-function compare(a: Book, b: Book, key: keyof Book): number {
-  const x = a[key];
-  const y = b[key];
-  if (x === null || x === undefined) return 1; 
-  if (y === null || y === undefined) return -1;
-  if (typeof x === "string" && typeof y === "string") return x.localeCompare(y, "ru");
-  return Number(x) - Number(y);
-}
-
 export async function getBooks(q: BookQuery): Promise<Book[]> {
   if (q.year !== undefined && q.status !== "read") {
     throw new ApiError(400, "Фильтр по году доступен только для статуса «Прочитано»");
@@ -61,12 +58,10 @@ export async function getBooks(q: BookQuery): Promise<Book[]> {
   let list = read();
   if (q.status) list = list.filter((b) => b.status === q.status);
   if (q.year !== undefined) list = list.filter((b) => b.finish_date?.startsWith(String(q.year)));
-  const key = q.sort_by ?? "created_at";
-  const dir = (q.order ?? "desc") === "asc" ? 1 : -1;
-  return [...list].sort((a, b) => {
-    if (a[key] === null || b[key] === null) return compare(a, b, key); 
-    return dir * compare(a, b, key);
-  });
+  // Порядок фиксирован, как на сервере: «Прочитано» по дате завершения, остальные по дате добавления,
+  // сначала новые, при равенстве по id
+  const key = q.status === "read" ? "finish_date" : "created_at";
+  return [...list].sort((a, b) => (b[key] ?? "").localeCompare(a[key] ?? "") || b.id - a.id);
 }
 
 export async function getCounts(): Promise<Counts> {
@@ -84,11 +79,13 @@ export async function getYears(): Promise<number[]> {
 
 export async function createBook(input: BookInput): Promise<Book> {
   const books = read();
+  const now = new Date().toISOString();
   const book: Book = {
     ...input,
     id: Math.max(0, ...books.map((b) => b.id)) + 1,
     cover_path: null,
-    created_at: new Date().toISOString(),
+    created_at: now,
+    updated_at: now,
   };
   check(book);
   write([book, ...books]);
@@ -99,7 +96,7 @@ export async function updateBook(id: number, patch: Partial<BookInput>): Promise
   const books = read();
   const i = books.findIndex((b) => b.id === id);
   if (i === -1) throw new ApiError(404, "Книга не найдена");
-  const updated = { ...books[i], ...patch };
+  const updated = { ...books[i], ...patch, updated_at: new Date().toISOString() };
   check(updated);
   books[i] = updated;
   write(books);
@@ -110,7 +107,8 @@ export async function deleteBook(id: number): Promise<void> {
   write(read().filter((b) => b.id !== id));
 }
 
-export async function uploadCover(id: number, file: File): Promise<{ cover_path: string }> {
+export async function uploadCover(id: number, file: File): Promise<Book> {
+  // В демо обложка хранится прямо в браузере как data-URL
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
@@ -122,14 +120,14 @@ export async function uploadCover(id: number, file: File): Promise<{ cover_path:
   if (i === -1) throw new ApiError(404, "Книга не найдена");
   books[i] = { ...books[i], cover_path: dataUrl };
   write(books);
-  return { cover_path: dataUrl };
+  return books[i];
 }
 
-export async function deleteCover(id: number): Promise<void> {
+export async function deleteCover(id: number): Promise<Book> {
   const books = read();
   const i = books.findIndex((b) => b.id === id);
-  if (i !== -1) {
-    books[i] = { ...books[i], cover_path: null };
-    write(books);
-  }
+  if (i === -1) throw new ApiError(404, "Книга не найдена");
+  books[i] = { ...books[i], cover_path: null };
+  write(books);
+  return books[i];
 }
