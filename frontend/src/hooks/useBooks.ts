@@ -14,13 +14,12 @@ import { messageOf } from "../api/client";
 import type { Book, BookInput, Counts } from "../types";
 
 export interface CoverChange {
-  file?: File; // загрузить новую обложку
-  remove?: boolean; // удалить текущую
+  file?: File; 
+  remove?: boolean; 
 }
 
 const EMPTY_COUNTS: Counts = { want_to_read: 0, reading: 0, read: 0 };
 
-/** Возвращает текст предупреждения, если книга сохранилась, а обложка нет */
 async function applyCover(id: number, cover?: CoverChange): Promise<string | null> {
   try {
     if (cover?.file) await uploadCover(id, cover.file);
@@ -42,7 +41,7 @@ export function useBooks(query: BookQuery) {
   const { status, year } = query;
 
   const reload = useCallback(async () => {
-    const id = ++lastRequest.current; // чтобы медленный старый ответ не затёр новый
+    const id = ++lastRequest.current; 
     try {
       const [b, c, y] = await Promise.all([
         getBooks({ status, year }),
@@ -66,8 +65,6 @@ export function useBooks(query: BookQuery) {
     reload();
   }, [reload]);
 
-  // Эти функции бросают ошибку, если бэкенд отказал (например, нарушено правило про даты).
-  // Вернуть они могут предупреждение про обложку.
   const create = useCallback(
     async (input: BookInput, cover?: CoverChange) => {
       const book = await createBook(input);

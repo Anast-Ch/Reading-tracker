@@ -1,9 +1,3 @@
-/**
- * ДЕМО-РЕЖИМ: имитация бэкенда книг в браузере (localStorage).
- * Работает, когда пользователь вошёл кнопкой «Демо-вход».
- * Повторяет правила настоящего API (см. API.md), чтобы можно было проверить
- * весь интерфейс без запущенного сервера.
- */
 import { ApiError } from "./client";
 import type { BookQuery } from "./booksApi";
 import type { Book, BookInput, Counts } from "../types";
@@ -20,7 +14,7 @@ const SEED: Book[] = [
 function read(): Book[] {
   const raw = localStorage.getItem(KEY);
   if (raw === null) {
-    write(SEED); // первый запуск: несколько примеров, чтобы было что смотреть
+    write(SEED); 
     return [...SEED];
   }
   try {
@@ -38,7 +32,6 @@ function write(books: Book[]) {
   }
 }
 
-/** Те же бизнес-правила, что описаны в DB_SCHEMA.md */
 function check(b: Book) {
   if (!b.title.trim() || !b.author.trim()) throw new ApiError(400, "Название и автор обязательны");
   if (b.status !== "read" && b.rating !== null) throw new ApiError(400, "Оценка возможна только для прочитанных книг");
@@ -58,8 +51,6 @@ export async function getBooks(q: BookQuery): Promise<Book[]> {
   let list = read();
   if (q.status) list = list.filter((b) => b.status === q.status);
   if (q.year !== undefined) list = list.filter((b) => b.finish_date?.startsWith(String(q.year)));
-  // Порядок фиксирован, как на сервере: «Прочитано» по дате завершения, остальные по дате добавления,
-  // сначала новые, при равенстве по id
   const key = q.status === "read" ? "finish_date" : "created_at";
   return [...list].sort((a, b) => (b[key] ?? "").localeCompare(a[key] ?? "") || b.id - a.id);
 }
@@ -108,7 +99,6 @@ export async function deleteBook(id: number): Promise<void> {
 }
 
 export async function uploadCover(id: number, file: File): Promise<Book> {
-  // В демо обложка хранится прямо в браузере как data-URL
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));

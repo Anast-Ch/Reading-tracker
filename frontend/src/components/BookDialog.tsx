@@ -9,10 +9,8 @@ import { validateCover } from "../lib/image";
 import StarRating from "./StarRating";
 
 interface Props {
-  /** Если передана, окно работает как «Редактировать», иначе как «Новая книга» */
   book?: Book;
   defaultStatus: Status;
-  /** Должна бросить ошибку, если сервер отклонил данные: текст покажем в окне */
   onSave: (data: BookInput, cover: CoverChange) => Promise<void>;
   onClose: () => void;
 }
@@ -44,7 +42,6 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
   const fileRef = useRef<HTMLInputElement>(null);
   const blobUrl = useRef<string | null>(null);
 
-  // Освобождаем память от временной ссылки на выбранный файл
   useEffect(() => () => {
     if (blobUrl.current) URL.revokeObjectURL(blobUrl.current);
   }, []);
@@ -105,7 +102,6 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
     setServerError("");
     if (Object.keys(found).length > 0) return;
 
-    // Правила бэкенда: у «Хочу» дат нет, у «Читаю» нет даты окончания, оценка только у «Прочитано»
     const data: BookInput = {
       title: title.trim(),
       author: author.trim(),
