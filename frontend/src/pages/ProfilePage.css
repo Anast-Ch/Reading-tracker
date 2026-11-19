@@ -1,0 +1,20 @@
+.profile-summary { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: var(--pink); border: 2px solid var(--ink); border-radius: 28px; padding: 24px; }
+.avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; font: 700 32px "Roboto Slab", Georgia, serif; flex: none; }
+.profile-summary__name { margin: 0; font: 700 24px "Roboto Slab", Georgia, serif; }
+.profile-summary__logout { margin-left: auto; }
+
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.profile-card { background: #fff; border: 2px solid var(--ink); border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.profile-card h2 { font-size: 22px; }
+.profile-card__btn { align-self: flex-start; }
+.profile-card--danger { border-color: #b3261e; }
+.profile-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.form-msg { margin: 0; font-weight: 500; }
+.form-msg--ok { color: #1b6b3a; }
+.form-msg--err { color: #b3261e; }
+.btn--danger { background: #b3261e; border-color: #b3261e; color: #fff; }
+
+@media (max-width: 900px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}

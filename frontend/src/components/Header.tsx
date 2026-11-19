@@ -1,18 +1,17 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { TOKEN_KEY } from "../api/client";
 import "./Header.css";
 
 export default function Header() {
+  // Нужен, чтобы шапка перерисовывалась при смене страницы
+  // и пункты меню всегда соответствовали состоянию входа.
   useLocation();
-  
   const navigate = useNavigate();
-  
-  const isLoggedIn = Boolean(localStorage.getItem("auth_token"));
+  const isLoggedIn = Boolean(localStorage.getItem(TOKEN_KEY));
 
   function logout() {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user"); 
-    
-    navigate("/"); 
+    localStorage.removeItem(TOKEN_KEY);
+    navigate("/");
   }
 
   return (
@@ -26,21 +25,9 @@ export default function Header() {
         <NavLink to="/" end>
           Главная
         </NavLink>
-        
-        {isLoggedIn && (
-          <>
-            <NavLink to="/library">
-              Моя библиотека
-            </NavLink>
-            <NavLink to="/statistics">
-              Статистика
-            </NavLink>
-            <NavLink to="/profile">
-              Профиль
-            </NavLink>
-          </>
-        )}
-        
+        {isLoggedIn && <NavLink to="/library">Моя библиотека</NavLink>}
+        {isLoggedIn && <NavLink to="/stats">Статистика</NavLink>}
+        {isLoggedIn && <NavLink to="/profile">Профиль</NavLink>}
         {isLoggedIn ? (
           <button type="button" className="site-nav__btn" onClick={logout}>
             Выйти

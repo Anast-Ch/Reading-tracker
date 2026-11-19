@@ -4,6 +4,8 @@ import RequireAuth from "./components/RequireAuth";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import LibraryPage from "./pages/LibraryPage";
+import StatsPage from "./pages/StatsPage";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
   return (
@@ -20,6 +22,23 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/stats"
+          element={
+            <RequireAuth>
+              <StatsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        {/* Любой неизвестный адрес ведёт на главную */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

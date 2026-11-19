@@ -1,6 +1,11 @@
+/**
+ * Базовая функция для запросов к бэкенду.
+ * Адрес берётся из VITE_API_URL, по умолчанию "/api" (его пересылает прокси из vite.config.ts).
+ */
 export const BASE_URL: string = import.meta.env.VITE_API_URL ?? "/api";
 export const TOKEN_KEY = "auth_token";
 
+/** Токен демо-входа. С ним сайт работает без сервера (книги хранятся в браузере, см. booksMock.ts) */
 export const DEMO_TOKEN = "demo_token";
 export const isDemo = () => localStorage.getItem(TOKEN_KEY) === DEMO_TOKEN;
 
@@ -15,6 +20,7 @@ export class ApiError extends Error {
 export const messageOf = (e: unknown): string =>
   e instanceof Error ? e.message : "Что-то пошло не так";
 
+/** Тексты для ошибок 422 (неверный формат данных), по имени поля из loc */
 const FIELD_MESSAGES: Record<string, string> = {
   email: "Некорректный email",
   password: "Пароль: от 8 символов, не более 72 байт (кириллица занимает 2 байта на символ)",
@@ -27,8 +33,11 @@ const FIELD_MESSAGES: Record<string, string> = {
   start_date: "Некорректная дата начала",
   finish_date: "Некорректная дата окончания",
   file: "Не выбран файл",
+  name: "Имя: от 1 до 150 символов",
+  current_password: "Введите текущий пароль",
 };
 
+/** FastAPI присылает detail строкой (ошибки 400, 401, 404, 503) или списком (ошибки 422) */
 function detailToMessage(detail: unknown): string {
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail)) {
@@ -42,8 +51,9 @@ function detailToMessage(detail: unknown): string {
 
 interface Options {
   method?: string;
-  body?: unknown;
-  form?: FormData; 
+  body?: unknown; // уйдёт как JSON
+  form?: FormData; // уйдёт как multipart (загрузка файла)
+  /** false для входа и регистрации: токен не нужен, а 401 означает «неверный пароль» */
   auth?: boolean;
 }
 
@@ -58,7 +68,7 @@ export async function request<T>(path: string, opts: Options = {}): Promise<T> {
 
   let body: BodyInit | undefined;
   if (opts.form) {
-    body = opts.form;
+    body = opts.form; // Content-Type с границей браузер поставит сам
   } else if (opts.body !== undefined) {
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(opts.body);
@@ -72,6 +82,7 @@ export async function request<T>(path: string, opts: Options = {}): Promise<T> {
   }
 
   if (res.status === 401 && withAuth) {
+    // Токен недействителен или истёк: выходим и отправляем на вход
     localStorage.removeItem(TOKEN_KEY);
     window.location.assign("/auth");
     throw new ApiError(401, "Сессия истекла, войдите снова");
@@ -83,6 +94,7 @@ export async function request<T>(path: string, opts: Options = {}): Promise<T> {
       const data = await res.json();
       message = detailToMessage(data.detail);
     } catch {
+      /* тело ответа не JSON, оставляем общий текст */
     }
     throw new ApiError(res.status, message);
   }
