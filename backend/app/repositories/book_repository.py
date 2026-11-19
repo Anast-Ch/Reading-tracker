@@ -25,7 +25,12 @@ class BookRepository:
         )
 
     def list_for_user(
-        self, user_id: int, status: str | None = None, year: int | None = None
+        self,
+        user_id: int,
+        status: str | None = None,
+        year: int | None = None,
+        finish_from: date | None = None,
+        finish_to: date | None = None,
     ) -> list[UserBook]:
         query = self.db.query(UserBook).filter(UserBook.user_id == user_id)
         if status is not None:
@@ -34,6 +39,11 @@ class BookRepository:
             query = query.filter(
                 UserBook.finish_date >= date(year, 1, 1),
                 UserBook.finish_date < date(year + 1, 1, 1),
+            )
+        if finish_from is not None and finish_to is not None:
+            query = query.filter(
+                UserBook.finish_date >= finish_from,
+                UserBook.finish_date <= finish_to,
             )
         if status == "read":
             query = query.order_by(
@@ -79,3 +89,11 @@ class BookRepository:
     def delete(self, book: UserBook) -> None:
         self.db.delete(book)
         self.db.commit()
+
+    def cover_paths_for_user(self, user_id: int) -> list[str]:
+        rows = (
+            self.db.query(UserBook.cover_path)
+            .filter(UserBook.user_id == user_id, UserBook.cover_path.isnot(None))
+            .all()
+        )
+        return [row[0] for row in rows]

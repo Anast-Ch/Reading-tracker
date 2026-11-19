@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -47,11 +49,15 @@ def create_book(
 def list_books(
     status_filter: BookStatus | None = Query(default=None, alias="status"),
     year: int | None = Query(default=None, ge=1, le=9998),
+    finish_from: date | None = Query(default=None),
+    finish_to: date | None = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        return BookService(db).list_books(current_user.id, status_filter, year)
+        return BookService(db).list_books(
+            current_user.id, status_filter, year, finish_from, finish_to
+        )
     except BookValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

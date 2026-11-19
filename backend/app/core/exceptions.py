@@ -16,3 +16,11 @@ class BookValidationError(Exception):
 
 class CoverValidationError(Exception):
     """Файл обложки не прошёл проверку (формат, размер, содержимое)."""
+
+
+class StatsParamsError(Exception):
+    """Несогласованные параметры периода статистики."""
+
+
+class WrongPasswordError(Exception):
+    """Неверный текущий пароль при смене пароля."""

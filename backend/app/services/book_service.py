@@ -58,13 +58,37 @@ class BookService:
         return book
 
     def list_books(
-        self, user_id: int, status: str | None, year: int | None
+        self,
+        user_id: int,
+        status: str | None,
+        year: int | None,
+        finish_from: date | None = None,
+        finish_to: date | None = None,
     ) -> list[UserBook]:
         if year is not None and status != "read":
             raise BookValidationError(
                 "Фильтр по году работает только вместе со status=read"
             )
-        return self.repo.list_for_user(user_id, status, year)
+        if (finish_from is None) != (finish_to is None):
+            raise BookValidationError(
+                "Параметры finish_from и finish_to передаются только вместе"
+            )
+        if finish_from is not None and finish_to is not None:
+            if status != "read":
+                raise BookValidationError(
+                    "Фильтр по датам работает только вместе со status=read"
+                )
+            if year is not None:
+                raise BookValidationError(
+                    "Фильтры year и finish_from/finish_to нельзя сочетать"
+                )
+            if finish_from > finish_to:
+                raise BookValidationError(
+                    "finish_from не может быть позже finish_to"
+                )
+        return self.repo.list_for_user(
+            user_id, status, year, finish_from, finish_to
+        )
 
     def get_counts(self, user_id: int) -> dict[str, int]:
         counts = self.repo.count_by_status(user_id)
