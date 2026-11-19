@@ -1,4 +1,3 @@
-/** ДЕМО-РЕЖИМ: статистика считается из демо-книг по тем же правилам, что на сервере. */
 import { getBooks } from "./booksMock";
 import type { Stats } from "./statsApi";
 import { inRange, periodRange } from "../lib/period";

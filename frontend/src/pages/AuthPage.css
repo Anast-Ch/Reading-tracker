@@ -267,20 +267,17 @@
   line-height: 1;
 }
 
-/* Обёртка для поля пароля и кнопки-глазика */
 .password-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-/* Поле ввода занимает всё место, но оставляет отступ справа для иконки */
 .password-wrapper input {
   flex: 1;
-  padding-right: 44px; /* Место под иконку, чтобы текст не наезжал */
+  padding-right: 44px; 
 }
 
-/* Кнопка-глазик */
 .toggle-password-btn {
   position: absolute;
   right: 12px;
@@ -291,11 +288,10 @@
   align-items: center;
   justify-content: center;
   padding: 4px;
-  color: var(--muted); /* Используем твой существующий цвет из :root */
+  color: var(--muted);
   transition: color 0.2s, transform 0.1s;
 }
 
-/* Эффект при наведении на глазик */
 .toggle-password-btn:hover {
   color: var(--ink);
 }

@@ -7,12 +7,20 @@ import { STATUSES, STATUS_LABELS } from "../types";
 import { todayStr } from "../lib/date";
 import { validateCover } from "../lib/image";
 import StarRating from "./StarRating";
+import BookSearch from "./BookSearch"; 
 
 interface Props {
   book?: Book;
   defaultStatus: Status;
   onSave: (data: BookInput, cover: CoverChange) => Promise<void>;
   onClose: () => void;
+}
+interface SearchResult {
+  title: string;
+  author: string;
+  publish_year?: number;
+  pages_count?: number;
+  cover_url?: string;
 }
 
 const isPositiveInt = (s: string) => /^\d+$/.test(s) && Number(s) > 0;
@@ -41,6 +49,8 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const blobUrl = useRef<string | null>(null);
+
+  const [selectedSearchBook, setSelectedSearchBook] = useState<any>(null);
 
   useEffect(() => () => {
     if (blobUrl.current) URL.revokeObjectURL(blobUrl.current);
@@ -72,6 +82,24 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
     setCoverPreview(undefined);
     setCoverRemoved(true);
     if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function handleSearchSelect(searchBook: SearchResult) {
+    setSelectedSearchBook(searchBook);
+    setTitle(searchBook.title);
+    setAuthor(searchBook.author);
+    if (searchBook.publish_year) setPublishYear(searchBook.publish_year.toString());
+    if (searchBook.pages_count) setPages(searchBook.pages_count.toString());
+    setErrors((prev) => ({ ...prev, title: "", author: "" }));
+  }
+
+  function handleSearchClear() {
+    setSelectedSearchBook(null);
+    setTitle("");
+    setAuthor("");
+    setPublishYear("");
+    setPages("");
+    setErrors({});
   }
 
   function validate() {
@@ -137,6 +165,24 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
       >
         <h2 id="dialog-title">{book ? "Редактировать книгу" : "Новая книга"}</h2>
 
+        {!book && (
+          <BookSearch
+            onSelect={handleSearchSelect}
+            selectedBook={selectedSearchBook}
+            onClear={handleSearchClear}
+          />
+        )}
+        <label className="field">
+          Список
+          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="field">
           Название
           <input value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} autoFocus />
@@ -159,17 +205,6 @@ export default function BookDialog({ book, defaultStatus, onSave, onClose }: Pro
           Количество страниц (необязательно)
           <input inputMode="numeric" value={pages} onChange={(e) => setPages(e.target.value)} />
           {errors.pages && <span className="field__error">{errors.pages}</span>}
-        </label>
-
-        <label className="field">
-          Список
-          <select value={status} onChange={(e) => changeStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
         </label>
 
         {status !== "want_to_read" && (

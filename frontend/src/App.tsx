@@ -38,7 +38,6 @@ export default function App() {
             </RequireAuth>
           }
         />
-        {/* Любой неизвестный адрес ведёт на главную */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

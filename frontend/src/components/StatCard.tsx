@@ -6,7 +6,6 @@ interface Props {
   loading?: boolean;
 }
 
-/** Карточка с одним крупным показателем */
 export default function StatCard({ label, value, hint, tone, loading }: Props) {
   return (
     <article className={`stat-card stat-card--${tone}`} aria-busy={loading}>

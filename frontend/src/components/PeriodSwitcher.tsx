@@ -13,7 +13,6 @@ const TYPES: { value: PeriodType; label: string }[] = [
   { value: "year", label: "Год" },
 ];
 
-/** Переключатель «Месяц / Сезон / Год» и стрелки «‹ ›» для листания периодов */
 export default function PeriodSwitcher({ period, onTypeChange, onShift }: Props) {
   const hint = periodHint(period);
   return (

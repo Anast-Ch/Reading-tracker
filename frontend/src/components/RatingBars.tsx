@@ -1,6 +1,5 @@
 import type { RatingDistribution } from "../lib/period";
 
-/** Сколько книг получили каждую оценку от 5 до 1 */
 export default function RatingBars({ data }: { data: RatingDistribution }) {
   const max = Math.max(1, ...data.counts);
   return (

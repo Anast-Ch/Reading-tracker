@@ -10,8 +10,8 @@ interface Message {
   text: string;
 }
 
-const PASSWORD_MIN = 8; // символов
-const PASSWORD_MAX_BYTES = 72; // байт в UTF-8 (кириллица занимает 2 байта на символ)
+const PASSWORD_MIN = 8; 
+const PASSWORD_MAX_BYTES = 72; 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ProfilePage() {
@@ -19,20 +19,17 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loadError, setLoadError] = useState("");
 
-  // Форма «Данные»
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profileMsg, setProfileMsg] = useState<Message | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
-  // Форма «Пароль»
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [repeatPw, setRepeatPw] = useState("");
   const [pwMsg, setPwMsg] = useState<Message | null>(null);
   const [savingPw, setSavingPw] = useState(false);
 
-  // Удаление аккаунта
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
@@ -56,7 +53,6 @@ export default function ProfilePage() {
     if (newName && newName.length > 150) return setProfileMsg({ ok: false, text: "Имя: не длиннее 150 символов" });
     if (!EMAIL_RE.test(newEmail)) return setProfileMsg({ ok: false, text: "Некорректный email" });
 
-    // Отправляем только то, что изменилось
     const patch: UserPatch = {};
     if (newName !== user.name) patch.name = newName;
     if (newEmail !== user.email) patch.email = newEmail;
@@ -84,7 +80,7 @@ export default function ProfilePage() {
     if (newPw.length < PASSWORD_MIN || new TextEncoder().encode(newPw).length > PASSWORD_MAX_BYTES) {
       return setPwMsg({
         ok: false,
-        text: `Новый пароль: от ${PASSWORD_MIN} символов, не более ${PASSWORD_MAX_BYTES} байт (кириллица занимает 2 байта на символ)`,
+        text: `Новый пароль: от ${PASSWORD_MIN} символов`,
       });
     }
     if (newPw !== repeatPw) return setPwMsg({ ok: false, text: "Пароли не совпадают" });

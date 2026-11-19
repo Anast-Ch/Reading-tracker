@@ -119,14 +119,12 @@ a { color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
 
-/* Контейнер для двух иконок в ряд */
 .book-card__icon-buttons {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
 }
 
-/* Маленькая квадратная кнопка-иконка */
 .btn--icon {
   min-height: 38px;
   width: 90px;
@@ -135,10 +133,9 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  border-radius: 12px; /* чуть менее круглая, чем pill */
+  border-radius: 12px; 
 }
 
-/* Кнопка удаления — с красным оттенком при наведении */
 .btn--icon-danger:hover {
   background: #ffe0e0;
   border-color: #d32f2f;

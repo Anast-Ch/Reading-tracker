@@ -1,9 +1,8 @@
-/** ДЕМО-РЕЖИМ: профиль хранится в браузере. */
 import { ApiError } from "./client";
 import type { User, UserPatch } from "./userApi";
 
 const KEY = "reading-tracker:demo-user";
-const DEMO_BOOKS_KEY = "reading-tracker:demo-books"; // тот же ключ, что в booksMock.ts
+const DEMO_BOOKS_KEY = "reading-tracker:demo-books"; 
 const DEFAULT_USER: User = { id: 1, email: "demo@example.com", name: null };
 
 function read(): User {
@@ -31,9 +30,8 @@ export async function updateMe(patch: UserPatch): Promise<User> {
 }
 
 export async function changePassword(current: string, next: string): Promise<void> {
-  // У демо-пользователя пароля нет, принимаем любой непустой текущий
   if (!current) throw new ApiError(400, "Неверный текущий пароль");
-  if (next.length < 8) throw new ApiError(422, "Пароль: от 8 символов, не более 72 байт");
+  if (next.length < 8) throw new ApiError(422, "Пароль: от 8 символов");
 }
 
 export async function deleteMe(): Promise<void> {

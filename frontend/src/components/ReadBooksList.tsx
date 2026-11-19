@@ -3,7 +3,6 @@ import { formatDate } from "../lib/date";
 import BookCover from "./BookCover";
 import StarRating from "./StarRating";
 
-/** Список прочитанных за период книг */
 export default function ReadBooksList({ books }: { books: Book[] }) {
   return (
     <section className="panel">

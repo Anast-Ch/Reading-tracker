@@ -1,7 +1,6 @@
 .stats-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
 .stats-error { background: #fff; border: 2px solid #b3261e; color: #b3261e; border-radius: 16px; padding: 12px 18px; margin: 0; font-weight: 500; }
 
-/* Переключатель периода */
 .period { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
 .period__hint { flex-basis: 100%; text-align: right; margin: 0; }
 .seg { display: inline-flex; gap: 4px; padding: 4px; background: #fff; border: 2px solid var(--ink); border-radius: 999px; }
@@ -13,7 +12,6 @@
 .period-nav__btn:hover:not(:disabled) { background: var(--yellow); }
 .period-nav__btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* Карточки показателей */
 .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .stat-card { border: 2px solid var(--ink); border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 6px; }
 .stat-card--yellow { background: var(--yellow); }
@@ -24,7 +22,6 @@
 .stat-card__value { margin: 0; font: 700 48px/1.1 "Roboto Slab", Georgia, serif; }
 .stat-card__hint { margin: 0; font-size: 14px; }
 
-/* Панели с диаграммами */
 .stats-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
 .panel { background: #fff; border: 2px solid var(--ink); border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
 .panel h2 { font-size: 22px; }
@@ -42,7 +39,6 @@
 .rating-track { height: 18px; border: 2px solid var(--ink); border-radius: 9px; background: var(--cream); overflow: hidden; }
 .rating-fill { height: 100%; background: var(--yellow); }
 
-/* Список прочитанного */
 .read-list { list-style: none; margin: 0; padding: 0; }
 .read-item { display: grid; grid-template-columns: 44px 1fr auto 100px; gap: 14px; align-items: center; padding: 12px 0; border-top: 2px solid rgba(22, 22, 22, 0.1); }
 .read-item:first-child { border-top: none; }

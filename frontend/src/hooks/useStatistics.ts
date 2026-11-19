@@ -6,12 +6,9 @@ import type { Stats } from "../api/statsApi";
 import type { Period } from "../lib/period";
 import type { Book } from "../types";
 
-/**
- * Данные для экрана статистики:
- * - stats: числа за выбранный период с сервера (GET /stats);
- * - books: все прочитанные книги, загружаются один раз. Из них считаются диаграмма,
- *   распределение оценок и список, при смене периода они фильтруются на месте без запросов.
- */
+// Данные для экрана статистики:
+//stats: числа за выбранный период с сервера 
+//books: все прочитанные книги
 export function useStatistics(period: Period) {
   const [books, setBooks] = useState<Book[]>([]);
   const [booksLoading, setBooksLoading] = useState(true);
@@ -36,7 +33,7 @@ export function useStatistics(period: Period) {
   const { type, year, month, season } = period;
 
   useEffect(() => {
-    const id = ++lastRequest.current; // устаревшие ответы выбрасываем
+    const id = ++lastRequest.current;
     setStatsLoading(true);
     getStats({ type, year, month, season })
       .then((s) => {

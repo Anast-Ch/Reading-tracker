@@ -8,7 +8,7 @@ export interface User {
 }
 
 export interface UserPatch {
-  name?: string | null; // null сбрасывает имя
+  name?: string | null; 
   email?: string;
 }
 
@@ -17,12 +17,10 @@ export const getMe = (): Promise<User> => (isDemo() ? mock.getMe() : request<Use
 export const updateMe = (patch: UserPatch): Promise<User> =>
   isDemo() ? mock.updateMe(patch) : request<User>("/users/me", { method: "PATCH", body: patch });
 
-/** Неверный текущий пароль сервер отвечает кодом 400 (не 401), поэтому выхода из аккаунта не будет */
 export const changePassword = (current_password: string, new_password: string): Promise<void> =>
   isDemo()
     ? mock.changePassword(current_password, new_password)
     : request<void>("/users/me/password", { method: "PATCH", body: { current_password, new_password } });
 
-/** Удаляет аккаунт вместе со всеми книгами. Необратимо */
 export const deleteMe = (): Promise<void> =>
   isDemo() ? mock.deleteMe() : request<void>("/users/me", { method: "DELETE" });

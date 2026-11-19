@@ -5,7 +5,6 @@ interface Props {
   buckets: Bucket[];
 }
 
-/** Столбчатая диаграмма на обычных блоках, без библиотек */
 export default function BarChart({ title, buckets }: Props) {
   const max = Math.max(1, ...buckets.map((b) => b.count));
   const summary = buckets.map((b) => `${b.label}: ${b.count}`).join(", ");

@@ -22,7 +22,6 @@ export default function StatsPage() {
   const [period, setPeriod] = useState<Period>(() => currentPeriod("year"));
   const { books, booksLoading, stats, statsLoading, error } = useStatistics(period);
 
-  // Книги, прочитанные в выбранном периоде (по дате окончания), сначала новые
   const inPeriod = useMemo(() => {
     const range = periodRange(period);
     return books
