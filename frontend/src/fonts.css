@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Logotext';
+  src: url('/fonts/Inspiration-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MainFont';
+  src: url('/fonts/DidactGothic-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
